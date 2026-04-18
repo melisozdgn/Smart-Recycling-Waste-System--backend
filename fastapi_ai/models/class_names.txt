@@ -1,0 +1,5 @@
+Battery
+Glass
+Metal
+Paper & Cardboard
+Plastic
