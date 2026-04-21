@@ -12,7 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Services
 builder.Services.AddScoped<IScanHistoryService, ScanHistoryService>();
 
-// CORS — Flutter'dan gelen isteklere izin ver
+// CORS
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", p =>
         p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SRWS_API.Data;
 using SRWS_API.Services;
-// Eğer GuestScanRequest modeli Models klasöründeyse aşağıdaki satırın başındaki // işaretlerini kaldır:
 // using SRWS_API.Models;
 
 namespace SRWS_API.Controllers;
@@ -17,7 +16,6 @@ public class ScanController : ControllerBase
     public ScanController(IScanHistoryService scanService) => _scanService = scanService;
 
     /// POST /api/scan/history
-    /// Flutter'dan gelen taramayı kaydeder. Auth gerekmez.
     [HttpPost("history")]
     public async Task<IActionResult> AddScan([FromBody] GuestScanRequest request)
     {
@@ -26,7 +24,7 @@ public class ScanController : ControllerBase
     }
 
     /// GET /api/scan/history?deviceId=xxx&page=1
-    /// Cihaza ait tarama geçmişini döndürür.
+
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory(
         [FromQuery] string? deviceId,
@@ -46,7 +44,7 @@ public class CategoriesController : ControllerBase
     public CategoriesController(AppDbContext db) => _db = db;
 
     /// GET /api/categories
-    /// Tüm atık kategorilerini döndürür.
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {

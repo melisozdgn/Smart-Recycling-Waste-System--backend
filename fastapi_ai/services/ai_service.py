@@ -1,5 +1,5 @@
 # fastapi_ai/services/ai_service.py
-# Sadece 5 kategori: Plastic | Paper & Cardboard | Metal | Battery | Glass
+
 import io
 import random
 from PIL import Image

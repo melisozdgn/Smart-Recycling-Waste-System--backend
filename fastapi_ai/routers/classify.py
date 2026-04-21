@@ -28,7 +28,7 @@ async def classify_image(file: UploadFile = File(...)):
 
     contents = await file.read()
 
-    # Boyut kontrolü (max 10MB)
+    
     if len(contents) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size exceeds 10MB.")
 

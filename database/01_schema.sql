@@ -1,6 +1,3 @@
--- SRWS PostgreSQL Schema (Auth YOK, 5 Kategori)
--- Kategoriler: Plastic | Paper & Cardboard | Metal | Battery | Glass
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE waste_categories (
