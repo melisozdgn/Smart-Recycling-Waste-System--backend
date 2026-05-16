@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: srws_postgres
+    environment:
+      POSTGRES_DB:       srws_db
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: srws_password_2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dotnet_api:
+    build:
+      context: ./dotnet_api
+      dockerfile: Dockerfile
+    container_name: srws_dotnet_api
+    ports:
+      - "5000:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=srws_db;Username=postgres;Password=srws_password_2024
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  fastapi_ai:
+    build:
+      context: ./fastapi_ai
+      dockerfile: Dockerfile
+    container_name: srws_fastapi_ai
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  postgres_data:
