@@ -1,5 +1,6 @@
 Battery
+Cardboard
 Glass
 Metal
-Paper & Cardboard
+Paper
 Plastic

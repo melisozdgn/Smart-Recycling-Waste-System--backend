@@ -1,9 +1,8 @@
 # fastapi_ai/services/ai_service.py
 
 import io
-import random
 from PIL import Image
-import numpy as np
+from ultralytics import YOLO
 
 CATEGORIES = {
     "Plastic": {
@@ -33,51 +32,62 @@ CATEGORIES = {
     },
 }
 
+# Veri setindeki class id sırası
+CLASS_NAMES = ["Battery", "Cardboard", "Glass", "Metal", "Paper", "Plastic"]
+
+CONF_THRESHOLD = 0.25
+
 _model = None
 
 def load_model():
     global _model
     try:
-        # TensorFlow modeli hazir olunca:
-        # import tensorflow as tf
-        # _model = tf.keras.models.load_model("models/waste_classifier.h5")
-        # Sinif sirasi egitimde kullanilan sirayla ayni olmali:
-        # 0=Battery, 1=Glass, 2=Metal, 3=Paper & Cardboard, 4=Plastic
-
-        # PyTorch modeli hazir olunca:
-        # import torch
-        # _model = torch.load("models/waste_classifier.pt", map_location="cpu")
-        # _model.eval()
-        print("Model dosyasi bulunamadi - MOCK mod aktif")
+        _model = YOLO("models/best.pt")
+        print("✅ YOLO modeli yüklendi.")
     except Exception as e:
-        print(f"Model yuklenemedi: {e} - MOCK mod aktif")
+        print(f"❌ Model yüklenemedi: {e}")
+        _model = None
 
 load_model()
 
 
 async def classify_waste_image(image_bytes: bytes):
     try:
-        img     = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        img_arr = np.array(img.resize((224, 224))) / 255.0
-
-        if _model is not None:
-            pass  # Gercek inference buraya gelecek
-
-        # MOCK mod
-        category_name = random.choice(list(CATEGORIES.keys()))
-        confidence    = round(random.uniform(0.78, 0.98), 4)
-
-        if confidence < 0.40:
+        if _model is None:
+            print("Model yüklü değil.")
             return None
 
-        info = CATEGORIES[category_name]
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
+        results = _model.predict(img, imgsz=640, conf=CONF_THRESHOLD, verbose=False)
+
+        if not results or len(results[0].boxes) == 0:
+            return None
+
+        # En yüksek confidence'lı tespiti al
+        boxes       = results[0].boxes
+        confidences = boxes.conf.tolist()
+        class_ids   = boxes.cls.tolist()
+
+        best_idx    = confidences.index(max(confidences))
+        best_conf   = round(confidences[best_idx], 4)
+        best_cls_id = int(class_ids[best_idx])
+        best_cls    = CLASS_NAMES[best_cls_id]
+
+        # Paper ve Cardboard'u frontend için birleştir
+        if best_cls in ["Cardboard", "Paper"]:
+            best_cls = "Paper & Cardboard"
+
+        info = CATEGORIES[best_cls]
+
         return {
-            "category":      category_name,
-            "confidence":    confidence,
+            "category":      best_cls,
+            "confidence":    best_conf,
             "description":   info["description"],
             "recycling_bin": info["recycling_bin"],
             "color_hex":     info["color_hex"],
         }
+
     except Exception as e:
         print(f"classify error: {e}")
         return None
